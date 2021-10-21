@@ -1,19 +1,32 @@
 # Data pipeline automation script to process data from MySQL and deploy to GDS
-
+# Import modules
+import pandas as pd
 from sqlalchemy import create_engine
 import pymysql
-
-engine = sqlalchemy.create_engine('mysql+pymysql://root:password@localhost:3306/test_schema').connect()
-
-import pandas as pd
+import cryptography # For managing secure passwords
+from dotenv import load_dotenv, dotenv_values
+import os
 import time
 
-sales = pd.read_sql_table("gds_sale_transactions", engine)
-purchasing = pd.read_sql_table("gds_purchase_transactions", engine)
-mach_rent = pd.read_sql_table("gds_machine_rental_transactions", engine)
-mach_pur = pd.read_sql_table("gds_machine_purchase_transactions", engine)
-expenses = pd.read_sql_table("gds_expense_transactions", engine)
-processing = pd.read_sql_table("gds_processing_transactions", engine)
+# Environment variables
+load_dotenv(verbose=True)
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
+DATABASE = os.getenv("DATABASE_NAME")
+SERVER = os.getenv("SERVER")
+PORT = os.getenv("PORT")
+
+engine_str = "mysql+pymysql://{user}:{pw}@{server}:{port}/{db}".format(user=USER, pw=PASSWORD,
+    server=SERVER, port=PORT, db=DATABASE)
+engine = create_engine(engine_str).connect()
+
+# Read SQL Tables
+sales = pd.read_sql("SELECT * from gds_sale_transactions", engine)
+purchasing = pd.read_sql_table("SELECT * from gds_purchase_transactions", engine)
+mach_rent = pd.read_sql_table("SELECT * from gds_machine_rental_transactions", engine)
+mach_pur = pd.read_sql_table("SELECT * from gds_machine_purchase_transactions", engine)
+expenses = pd.read_sql_table("SELECT * from gds_expense_transactions", engine)
+processing = pd.read_sql_table("SELECT * from gds_processing_transactions", engine)
 
 product_legends_df = pd.read_excel('Products Information.xlsx')
 
